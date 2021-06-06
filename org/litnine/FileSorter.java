@@ -3,26 +3,28 @@ package org.litnine;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FileSorter {
     private static final Map<String, List<File>> categorizedFiles = new HashMap<>();
 
-    public static String str(){
+    @Deprecated
+    public static String str() {
         StringBuilder sb = new StringBuilder("<html>");
 
-        for(String dirName: categorizedFiles.keySet()){
+        for (String dirName : categorizedFiles.keySet()) {
             sb.append("<br/>").append(dirName).append(":<br/><br/>");
-            for(File file : categorizedFiles.get(dirName)){
+            for (File file : categorizedFiles.get(dirName)) {
                 Path path = file.toPath();
                 sb.append(path.toString()).append("<br/>");
             }
         }
         sb.append("</html>");
         return sb.toString();
+    }
+
+    public static Map<String, List<File>> getCategorizedFiles() {
+        return categorizedFiles;
     }
 
     public static void addFiles(List<File> files) {
@@ -33,7 +35,19 @@ public class FileSorter {
 
     public static void addFile(File file) {
         String[] filenameParts = file.toString().toLowerCase().split("\\.");
+
+        if (filenameParts.length == 1) {
+            // Если это папка или нет расширения, не добавляем.
+            return;
+        }
+
         String fileExtension = filenameParts[filenameParts.length - 1];
+
+        if (!Arrays.asList(Config.ALLOWED_EXTENSIONS).contains(fileExtension)) {
+            // Если расширения нет в белом списке, игнорируем файл.
+            return;
+        }
+
         if (!categorizedFiles.containsKey(fileExtension)) {
             categorizedFiles.put(fileExtension, new ArrayList<>());
         }

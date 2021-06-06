@@ -1,12 +1,17 @@
 package org.litnine;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 public class SorterForm {
@@ -15,8 +20,11 @@ public class SorterForm {
     private JScrollPane scrollPane;
     public JPanel panel;
 
+    private DefaultTableModel listTableModel;
+
     public void init() {
-        sortButton.addActionListener(e -> { });
+        sortButton.addActionListener(e -> {
+        });
 
         new DropTarget(panel, new DropTargetListener() {
 
@@ -49,7 +57,18 @@ public class SorterForm {
                     try {
                         if (flavor.isFlavorJavaFileListType()) {
                             FileSorter.addFiles((List<File>) transferable.getTransferData(flavor));
-                            //label.setText(FileSorter.str());
+
+                            for (int i=listTableModel.getRowCount()-1;i>=0;i--){
+                                listTableModel.removeRow(i);
+                            }
+
+                            for(String dirName: FileSorter.getCategorizedFiles().keySet()){
+                                for(File file : FileSorter.getCategorizedFiles().get(dirName)){
+                                    Path path = file.toPath();
+                                    BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
+                                    listTableModel.addRow(new String[]{dirName, path.toString(), attr.creationTime().toString()});
+                                }
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -58,7 +77,12 @@ public class SorterForm {
                 event.dropComplete(true);
             }
         });
+
+        listTableModel = new DefaultTableModel(
+                new String[][]{},
+                new String[]{
+                        "Категория", "Имя", "Время создания"
+                });
+        table.setModel(listTableModel);
     }
-
-
 }
