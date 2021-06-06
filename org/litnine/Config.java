@@ -9,13 +9,6 @@ public class Config {
     public static final String[] ALLOWED_EXTENSIONS = {"psd", "sai2", "png", "jpg", "jpeg", "fla", "gif"};
 
     public static String getExecRoot(){
-        /*try {
-            return new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            return "";
-        }*/
-
         return System.getProperty("user.dir");
     }
 }
