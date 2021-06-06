@@ -69,6 +69,7 @@ public class FileSorter {
                 Path dest = Paths.get(to.toString(), "" + maxName++ + "." + dirName);
                 System.out.println(file + " перемещен в " + dest);
                 try {
+                    to.toFile().mkdirs();
                     Files.move(file.toPath(), dest);
                 } catch (IOException e) {
                     e.printStackTrace();

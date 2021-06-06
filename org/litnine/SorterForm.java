@@ -25,6 +25,10 @@ public class SorterForm {
     public void init() {
         sortButton.addActionListener(e -> {
             FileSorter.sortFiles();
+            for (int i=listTableModel.getRowCount()-1;i>=0;i--){
+                listTableModel.removeRow(i);
+            }
+            FileSorter.getCategorizedFiles().clear();
         });
 
         new DropTarget(panel, new DropTargetListener() {
