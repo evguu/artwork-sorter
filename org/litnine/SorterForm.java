@@ -24,6 +24,7 @@ public class SorterForm {
 
     public void init() {
         sortButton.addActionListener(e -> {
+            FileSorter.sortFiles();
         });
 
         new DropTarget(panel, new DropTargetListener() {

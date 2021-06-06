@@ -1,8 +1,11 @@
 package org.litnine;
 
+import com.sun.jdi.ObjectCollectedException;
+
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 public class FileSorter {
@@ -25,6 +28,62 @@ public class FileSorter {
 
     public static Map<String, List<File>> getCategorizedFiles() {
         return categorizedFiles;
+    }
+
+    public static void sortFiles() {
+        Path root = Paths.get(Config.getExecRoot(), Config.SORT_ROOT);
+        for (String dirName : FileSorter.getCategorizedFiles().keySet()) {
+            Path to = Paths.get(root.toString(), dirName);
+
+            String[] existingFiles = to.toFile().list();
+
+            int maxName = 0;
+            if (existingFiles != null) {
+                for (String name : existingFiles) {
+                    String potentialNumber = name.split("\\.")[0];
+                    if (isNumeric(potentialNumber)) {
+                        int num = Integer.parseInt(potentialNumber);
+                        if (num > maxName) {
+                            maxName = num;
+                        }
+                    }
+                }
+            }
+            maxName++;
+
+            List<File> sorted = new ArrayList<>(FileSorter.getCategorizedFiles().get(dirName));
+            Collections.sort(sorted, (o1, o2) -> {
+                BasicFileAttributes attr1;
+                BasicFileAttributes attr2;
+                try {
+                    attr1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
+                    attr2 = Files.readAttributes(o2.toPath(), BasicFileAttributes.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return -1;
+                }
+                return attr1.creationTime().compareTo(attr2.creationTime());
+            });
+
+            for (File file : sorted) {
+                Path dest = Paths.get(to.toString(), "" + maxName++ + "." + dirName);
+                System.out.println(file + " перемещен в " + dest);
+                try {
+                    Files.move(file.toPath(), dest);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     public static void addFiles(List<File> files) {
